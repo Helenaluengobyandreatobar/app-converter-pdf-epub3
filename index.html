@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - A Pen by Helena luengo</title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Convertidor PDF a EPUB3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #fff0f5;
+    }
+
+    .container {
+      background-color: #f0f0f3;
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+      text-align: center;
+    }
+
+    h1 {
+      color: #ff69b4;
+      margin-bottom: 1.5rem;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-area {
+      border: 2px dashed #ff69b4;
+      border-radius: 50%;
+      width: 150px;
+      height: 150px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
+    }
+
+    .upload-area:hover {
+      background-color: #fff0f5;
+      box-shadow: inset 2px 2px 4px #bebebe, inset -2px -2px 4px #ffffff;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      color: #ff69b4;
+    }
+
+    #file-name {
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .btn {
+      background-color: #ff69b4;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      margin: 0.5rem;
+      box-shadow: 4px 4px 8px #bebebe, -4px -4px 8px #ffffff;
+    }
+
+    .btn:hover {
+      background-color: #ff1493;
+      box-shadow: 2px 2px 4px #bebebe, -2px -2px 4px #ffffff;
+    }
+
+    .btn:disabled {
+      background-color: #ffb6c1;
+      cursor: not-allowed;
+      box-shadow: 4px 4px 8px #bebebe, -4px -4px 8px #ffffff;
+    }
+
+    #progress-bar {
+      width: 100%;
+      background-color: #f0f0f0;
+      border-radius: 8px;
+      margin-top: 1rem;
+      display: none;
+      box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
+    }
+
+    #progress {
+      width: 0%;
+      height: 20px;
+      background-color: #ff69b4;
+      border-radius: 8px;
+      transition: width 0.5s;
+    }
+
+    #download-btn {
+      display: none;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 1rem;
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Convertidor PDF a EPUB3</h1>
+    <div class="upload-area" id="upload-area">
+      <span class="upload-icon">📁</span>
+    </div>
+    <p id="file-name">Ningún archivo seleccionado</p>
+    <input type="file" id="file-input" accept=".pdf" style="display: none;">
+    <button id="convert-btn" class="btn" disabled>Convertir a EPUB3</button>
+    <button id="download-btn" class="btn" style="display: none;">Descargar EPUB3</button>
+    <div id="progress-bar">
+      <div id="progress"></div>
+    </div>
+  </div>
+
+  <script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('file-input');
+    const fileName = document.getElementById('file-name');
+    const convertBtn = document.getElementById('convert-btn');
+    const downloadBtn = document.getElementById('download-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const progress = document.getElementById('progress');
+    let selectedFile = null;
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (event) => {
+      selectedFile = event.target.files[0];
+      if (selectedFile) {
+        fileName.textContent = `Archivo seleccionado: ${selectedFile.name}`;
+        convertBtn.disabled = false;
+        downloadBtn.style.display = 'none';
+      }
+    });
+    convertBtn.addEventListener('click', () => {
+      if (selectedFile) {
+        processFile(selectedFile);
+      }
+    });
+    downloadBtn.addEventListener('click', () => {
+      const epub3Filename = selectedFile.name.replace('.pdf', '.epub3');
+      const blob = new Blob(['Contenido simulado del EPUB3'], {
+        type: 'application/epub+zip'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = epub3Filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    function processFile(file) {
+      convertBtn.disabled = true;
+      progressBar.style.display = 'block';
+      downloadBtn.style.display = 'none';
+      let processedSize = 0;
+      const totalSize = file.size;
+      const chunkSize = totalSize / 100;
+
+      function simulateProcessing() {
+        if (processedSize < totalSize) {
+          processedSize += chunkSize;
+          const percentComplete = (processedSize / totalSize) * 100;
+          progress.style.width = `${percentComplete}%`;
+          setTimeout(simulateProcessing, 50);
+        } else {
+          setTimeout(() => {
+            alert('Conversión simulada completada. Ahora puedes descargar el archivo EPUB3.');
+            downloadBtn.style.display = 'inline-block';
+            resetUI();
+          }, 500);
+        }
+      }
+      simulateProcessing();
+    }
+
+    function resetUI() {
+      convertBtn.disabled = false;
+      progressBar.style.display = 'none';
+      progress.style.width = '0%';
+      fileName.textContent = 'Ningún archivo seleccionado';
+    }
+  </script>
+</body>
+
+</html>
+<!-- partial -->
+  
+</body>
+</html>
